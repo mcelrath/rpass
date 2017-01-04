@@ -3,6 +3,7 @@
 # Random password generator.  By default generates passwords with 16 characters
 # between 32 and 128.  Optional argument is length.
 use Getopt::Std;
+use Crypt::Random qw( makerandom );
 
 getopts('nace:wd:l:D:L:i1', \%opts);
 $type = 'character';
@@ -128,7 +129,7 @@ if($type eq 'character') {
 print "\nRandom password: ";
 
 for($i=0;$i<$length;$i++) {
-    print $letters[int(rand($#letters+1))];
+    print $letters[makerandom(Size => ($#letters+1)/10+1, Strength => 1)%($#letters+1)];
     if($type eq 'word') { print " "; }
 }
 print "\n";
