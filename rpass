@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# 
+#
 # Random password generator.  By default generates passwords with 16 characters
 # between 32 and 128.  Optional argument is length.
 use Getopt::Std;
@@ -7,9 +7,7 @@ use Getopt::Std;
 getopts('nace:wd:l:D:L:i1', \%opts);
 $type = 'character';
 @letters = ();
-#@dicts = ('/usr/share/dict/words');
-#@dicts = ('/usr/share/dict/american-english-small');
-@dicts = ('/home/mcelrath/Projects/bitcoin/bip39_words.txt');
+@dicts = ('bip39_words.txt');
 $dictpath = '/usr/share/dict/';
 $length = 16;
 if($opts{'a'} || $opts{'n'} || $opts{'c'}) {
@@ -34,20 +32,20 @@ if($opts{'a'} || $opts{'n'} || $opts{'c'}) {
     for($i=0;$i<$#letters;$i++) { $letters{$letters[$i]}=1; }
     @letters = keys %letters;
 } elsif($opts{'w'} || $opts{'d'} || $opts{'l'} || $opts{'D'} || $opts{'L'} || $opts{'i'}) {
-    if($opts{'d'}) { 
-        @dicts = ($opts{'d'}); 
+    if($opts{'d'}) {
+        @dicts = ($opts{'d'});
     }
-    if($opts{'l'}) { 
+    if($opts{'l'}) {
         @dicts = ();
         for my $lang (split(',',$opts{'l'})) {
             push @dicts, $dictpath.$lang;
         }
     }
-    if($opts{'D'}) { 
-        push @dicts, $opts{'D'}; 
+    if($opts{'D'}) {
+        push @dicts, $opts{'D'};
     }
-    if($opts{'L'}) { 
-        push @dicts, $dictpath.$opts{'L'}; 
+    if($opts{'L'}) {
+        push @dicts, $dictpath.$opts{'L'};
     }
     if($opts{'i'}) {
         @dicts = ('/usr/share/ispell/american-small.mwl.gz');
