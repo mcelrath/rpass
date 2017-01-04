@@ -1,0 +1,137 @@
+#!/usr/bin/perl -w
+# 
+# Random password generator.  By default generates passwords with 16 characters
+# between 32 and 128.  Optional argument is length.
+use Getopt::Std;
+
+getopts('nace:wd:l:D:L:i1', \%opts);
+$type = 'character';
+@letters = ();
+#@dicts = ('/usr/share/dict/words');
+#@dicts = ('/usr/share/dict/american-english-small');
+@dicts = ('/home/mcelrath/Projects/bitcoin/bip39_words.txt');
+$dictpath = '/usr/share/dict/';
+$length = 16;
+if($opts{'a'} || $opts{'n'} || $opts{'c'}) {
+    if($opts{'n'}) {
+        for($i=0x30;$i<0x3A;$i++) { # numbers
+            push @letters, chr($i);
+        }
+    }
+    if($opts{'a'}) {
+        if(!$opts{'c'}) { # -c = case insensitive
+            for($i=0x41;$i<0x5B;$i++) { # upper-case letters
+                push @letters, chr($i);
+            }
+        }
+        for($i=0x61;$i<0x7B;$i++) { # lower-case letters
+            push @letters, chr($i);
+        }
+    }
+} elsif($opts{'e'}) {
+    push @letters, split('', $opts{'e'});
+    %letters = ();
+    for($i=0;$i<$#letters;$i++) { $letters{$letters[$i]}=1; }
+    @letters = keys %letters;
+} elsif($opts{'w'} || $opts{'d'} || $opts{'l'} || $opts{'D'} || $opts{'L'} || $opts{'i'}) {
+    if($opts{'d'}) { 
+        @dicts = ($opts{'d'}); 
+    }
+    if($opts{'l'}) { 
+        @dicts = ();
+        for my $lang (split(',',$opts{'l'})) {
+            push @dicts, $dictpath.$lang;
+        }
+    }
+    if($opts{'D'}) { 
+        push @dicts, $opts{'D'}; 
+    }
+    if($opts{'L'}) { 
+        push @dicts, $dictpath.$opts{'L'}; 
+    }
+    if($opts{'i'}) {
+        @dicts = ('/usr/share/ispell/american-small.mwl.gz');
+    }
+    for my $dict (@dicts) {
+        if(-f $dict) {
+            if($dict =~ /\.gz$/) {
+                chomp(@words = `zcat $dict`);
+            } else {
+                chomp(@words = `cat $dict`);
+            }
+            if($dict =~ /\.mwl/) { # ispell dictionary
+                @words = map m/([^\/]*)[\/]*/, @words;
+            }
+            push @letters, @words;
+        } else {
+            print "Dictionary file $dict not found.\n";
+            exit(1);
+        }
+    }
+    if($opts{'1'}) {
+        @newwords = ();
+        for my $word (@words) { # could be done better
+            if($word =~ /i/) {
+                $word =~ tr/i/1/;
+                push @newwords, $word;
+            }
+            if($word =~ /l/) {
+                $word =~ tr/l/1/;
+                push @newwords, $word;
+            }
+            if($word =~ /e/) {
+                $word =~ tr/e/3/;
+                push @newwords, $word;
+            }
+            if($word =~ /t/) {
+                $word =~ tr/t/7/;
+                push @newwords, $word;
+            }
+            if($word =~ /a/) {
+                $word =~ tr/a/4/;
+                push @newwords, $word;
+            }
+        }
+        push @letters, @newwords;
+    }
+    $length = 4;
+    $type = 'word';
+} else {
+    for($i=0x20;$i<0x7F;$i++) {
+        push @letters, chr($i);
+    }
+}
+$length = $ARGV[0]?$ARGV[0]:$length;
+
+print "rpass [-n] [-a] [-c] [-e <characters>] [-w] <length>\n";
+print "Generate a random password\n";
+print "  -n             numeric\n";
+print "  -a             alphabetic\n";
+print "  -c             case insensitive\n";
+print "  -e <chars>     use these characters\n";
+print "  -w             word phrase\n";
+print "  -i             use ispell dictionaries\n";
+print "  -d <dict>      use only this dictionary file\n";
+print "  -D <dict>      add this dictionary file too\n";
+print "  -l <lang>      use only this language (file in /usr/share/dict/)\n";
+print "  -L <lang>      add this language (file in /usr/share/dict/)\n";
+print "  -1             make 1337 substitutions on words (probably better to add words)\n";
+print "\n";
+print "Selecting $length-$type password from ";
+if($type eq 'character') {
+    print "the character set:\n", join('', @letters), "\n";
+} elsif($type eq 'word') {
+    $len = $#letters+1;
+    print "the $len-word dictionaries\n";
+    for my $dict (@dicts) {
+        print "\t$dict\n";
+    }
+}
+print "\nRandom password: ";
+
+for($i=0;$i<$length;$i++) {
+    print $letters[int(rand($#letters+1))];
+    if($type eq 'word') { print " "; }
+}
+print "\n";
+print "Strength: 2^",int(log(($#letters+1)**$length)/log(2)),"\n";
