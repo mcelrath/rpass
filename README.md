@@ -4,6 +4,12 @@ Humans are terrible at making good passwords.  Let the computer do it for you.
 
 ![correct horse battery staple](http://imgs.xkcd.com/comics/password_strength.png)
 
+# Installation
+
+    cpan Crypt::Random
+
+# Example
+
     > rpass -w 12
     rpass [-n] [-a] [-c] [-e <characters>] [-w] <length>
     Generate a random password
